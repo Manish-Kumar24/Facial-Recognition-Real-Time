@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Verification</title>
+    <style>
+        .match-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .match-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Face Verification System</h1>
+    <button id="capture-btn">Capture Image</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById("capture-btn").addEventListener("click", async () => {
+            const response = await fetch("/capture", { method: "POST" });
+            const result = await response.json();
+            
+            if (result.error) {
+                document.getElementById("result").innerHTML = `<p>Error: ${result.error}</p>`;
+            } else {
+                // Display all matched images
+                if (result.matches && result.matches.length > 0) {
+                    const matchesHTML = result.matches.map(match => `
+                        <div class="match-item">
+                            <img src="${match.matched_image}" alt="Matched Face" style="width: 200px; height: auto;" />
+                            <p>Cosine Similarity: ${match.cosine_similarity.toFixed(4)}</p>
+                            <p>Euclidean Distance: ${match.euclidean_distance.toFixed(4)}</p>
+                        </div>
+                    `).join('');
+
+                    document.getElementById("result").innerHTML = `
+                        <h2>Similar Faces Found</h2>
+                        <div class="match-container">${matchesHTML}</div>
+                    `;
+                } else {
+                    document.getElementById("result").innerHTML = `<p>No similar faces found.</p>`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
